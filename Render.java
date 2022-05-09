@@ -20,11 +20,16 @@ import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.*; 
 import java.util.*; 
 
+
+
+
 public class Render extends ApplicationAdapter
 {
     private OrthographicCamera camera; //the camera to our world
     private Viewport viewport; //maintains the ratios of your world
     private ShapeRenderer renderer; //used to draw textures and fonts 
+    
+    private Tile[][] map;
     
     @Override//called once when we start the game
     public void create()
@@ -32,6 +37,8 @@ public class Render extends ApplicationAdapter
         camera = new OrthographicCamera(); 
         viewport = new FitViewport(Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT, camera); 
         renderer = new ShapeRenderer(); 
+        
+        map = new Tile[15][15];
     }
     
     @Override//game loop - gets called 60 times a second
@@ -40,9 +47,6 @@ public class Render extends ApplicationAdapter
         viewport.apply();
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        
-        
-        
         
         
     }
