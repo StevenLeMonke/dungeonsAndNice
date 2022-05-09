@@ -1,0 +1,9 @@
+#BlueJ class context
+comment0.target=Tile
+comment1.params=
+comment1.target=Tile()
+comment2.params=traversable
+comment2.target=Tile(boolean)
+comment3.params=traversable\ time
+comment3.target=Tile(boolean,\ int)
+numComments=4
