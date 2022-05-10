@@ -8,4 +8,6 @@ comment3.params=traversable\ time\ texture
 comment3.target=Tile(boolean,\ int,\ java.lang.String)
 comment4.params=
 comment4.target=int\ getTime()
-numComments=5
+comment5.params=
+comment5.target=boolean\ isTraversable()
+numComments=6

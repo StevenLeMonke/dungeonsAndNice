@@ -3,7 +3,7 @@ import com.badlogic.gdx.graphics.Texture;
 public class Tile
 {
     private boolean traversable;
-    private int time; //milisecond
+    private int time; // 1/60 of a second
     private Texture texture;
     
     public Tile()
@@ -16,7 +16,7 @@ public class Tile
     public Tile(boolean traversable)
     {
         this.traversable = traversable;
-        this.time = 100;
+        this.time = 20;
         this.texture = new Texture("assets/Barrier.png");
     }
     
@@ -30,5 +30,10 @@ public class Tile
     public int getTime()
     {
         return time;
+    }
+    
+    public boolean isTraversable()
+    {
+        return traversable;
     }
 }

@@ -14,8 +14,8 @@ public class Player extends Entity
         playerSpeed = Constants.PLAYER_SPEED;
         attackSpeed = 1.5;
         shield = 50;
-        xCoord = 0;
-        yCoord = 0;
+        xCoord = 6;
+        yCoord = 7;
     }
     
     public void attack(Entity e)
@@ -23,11 +23,8 @@ public class Player extends Entity
         e.updateHealth(playerDamage);
     }
     
-    public void movePlayer(int x, int y)
-    {
-        xCoord += x;
-        yCoord += y;  //y decreases as go up???
-    }
-    
-    
+    public void moveX(int x) {xCoord += x;}
+    public void moveY(int y) {yCoord += y;}
+    public int getX() {return xCoord;}
+    public int getY() {return yCoord;}
 }

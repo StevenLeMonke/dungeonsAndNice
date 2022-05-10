@@ -20,7 +20,6 @@ import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.*; 
 import java.util.*; 
 
-
 public class Render extends ApplicationAdapter
 {
     private OrthographicCamera camera; //the camera to our world
@@ -28,7 +27,9 @@ public class Render extends ApplicationAdapter
     private ShapeRenderer renderer; //used to draw textures and fonts 
 
     private GameState gamestate;
+    private Player player;
 
+    private int gameTime;
     private Tile[][] map;
 
     @Override//called once when we start the game
@@ -39,6 +40,8 @@ public class Render extends ApplicationAdapter
         renderer = new ShapeRenderer(); 
         gamestate = GameState.MENU;
 
+        player = new Player();
+        gameTime = 0;
         map = new Tile[15][15];
     }
 
@@ -48,18 +51,37 @@ public class Render extends ApplicationAdapter
         viewport.apply();
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        int x = player.getX();
+        int y = player.getY();
 
         if(gamestate == GameState.GAME)
         {
-
+            if(gameTime > map[x][y].getTime())
+            {
+                if(Gdx.input.isKeyJustPressed(Keys.W) && map[x][y+1].isTraversable())
+                {player.moveY(1);}
+                if(Gdx.input.isKeyJustPressed(Keys.A) && map[x-1][y].isTraversable())
+                {player.moveX(-1);}
+                if(Gdx.input.isKeyJustPressed(Keys.S) && map[x][y-1].isTraversable())
+                {player.moveY(-1);}
+                if(Gdx.input.isKeyJustPressed(Keys.D) && map[x+1][y].isTraversable())
+                {player.moveX(1);}
+            }
         }
 
         renderer.begin();
         if(gamestate == GameState.GAME)
         {
-
+            for(int r = 0; r < map.length ; r ++)
+            {
+                for(int c = 0; c < map[r].length ; c ++)
+                {
+                    
+                }
+            }
         }
         renderer.end();
+        gameTime ++;
     }
 
     @Override
