@@ -21,39 +21,73 @@ import com.badlogic.gdx.*;
 import java.util.*; 
 
 
-
-
 public class Render extends ApplicationAdapter
 {
     private OrthographicCamera camera; //the camera to our world
     private Viewport viewport; //maintains the ratios of your world
     private ShapeRenderer renderer; //used to draw textures and fonts 
-    
+
+    private GameState gamestate;
+
     private Tile[][] map;
-    
+
     @Override//called once when we start the game
     public void create()
     {
         camera = new OrthographicCamera(); 
         viewport = new FitViewport(Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT, camera); 
         renderer = new ShapeRenderer(); 
-        
+        gamestate = GameState.MENU;
+
         map = new Tile[15][15];
     }
-    
+
     @Override//game loop - gets called 60 times a second
     public void render()
     {
         viewport.apply();
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        
-        
+
+        if(gamestate == GameState.GAME)
+        {
+
+        }
+
+        renderer.begin();
+        if(gamestate == GameState.GAME)
+        {
+
+        }
+        renderer.end();
     }
-    
+
     @Override
     public void dispose()
     {
         renderer.dispose(); 
+    }
+
+    private void genMap()
+    {
+        int randT = 0;
+        for(int r = 0; r < map.length ; r ++)
+        {
+            for(int c = 0; c < map[r].length; c++)
+            {
+                if(r == 0 || c == 0 || r == map.length - 1 || c == map[r].length - 1)
+                    map[r][c] = Constants.BARRIER;
+                else
+                {
+                    randT = (int) (Math.random() * 3 + 1);
+                    if(randT == 1)
+                        map[r][c] = Constants.STONE;
+                    if(randT == 2)
+                        map[r][c] = Constants.SAND;
+                    if(randT == 3)
+                        map[r][c] = Constants.GRASS;
+                }
+            }
+        }
     }
 }
