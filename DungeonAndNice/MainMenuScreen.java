@@ -14,8 +14,8 @@ public class MainMenuScreen implements Screen {
     private SpriteBatch batch; //used to draw textures and fonts 
     private BitmapFont font; //used to draw fonts
 
-    public static float WORLD_WIDTH = 800; //world units for width 
-    public static float WORLD_HEIGHT = 480; //world units for height
+    public static double WORLD_WIDTH = 800; //world units for width 
+    public static double WORLD_HEIGHT = 480; //world units for height
     //keep the ratio of your screen and your world the same
     
     private DropGame game; //since it extends Game we can call methods from the Game class
