@@ -1,9 +1,12 @@
+import com.badlogic.gdx.*; 
+import com.badlogic.gdx.graphics.Texture;
 public class Player extends Entity
 {
     private double playerSpeed;
     private double attackSpeed;
     private double playerDamage;
     private double shield;
+    private Texture texture;
     
     private int xCoord;  //coords of player
     private int yCoord;
@@ -16,6 +19,7 @@ public class Player extends Entity
         shield = 50;
         xCoord = 6;
         yCoord = 7;
+        texture = new Texture("assets/Player.png");
     }
     
     public void attack(Entity e)
@@ -27,4 +31,5 @@ public class Player extends Entity
     public void moveY(int y) {yCoord += y;}
     public int getX() {return xCoord;}
     public int getY() {return yCoord;}
+    public Texture texture() {return texture;}
 }

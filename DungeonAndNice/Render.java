@@ -25,6 +25,7 @@ public class Render extends ApplicationAdapter
     private OrthographicCamera camera; //the camera to our world
     private Viewport viewport; //maintains the ratios of your world
     private ShapeRenderer renderer; //used to draw textures and fonts 
+    private SpriteBatch batch;
 
     private GameState gamestate;
     private Player player;
@@ -38,11 +39,17 @@ public class Render extends ApplicationAdapter
         camera = new OrthographicCamera(); 
         viewport = new FitViewport(Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT, camera); 
         renderer = new ShapeRenderer(); 
-        gamestate = GameState.MENU;
-
+        gamestate = GameState.GAME;
+        batch = new SpriteBatch();
+        camera.viewportWidth = Constants.TILE_WIDTH * 5;
+        camera.viewportHeight = Constants.TILE_HEIGHT * 5;
+        
+        
         player = new Player();
         gameTime = 0;
-        map = new Tile[15][15];
+        map = new Tile[50][50];
+        
+        genMap();
     }
 
     @Override//game loop - gets called 60 times a second
@@ -59,28 +66,30 @@ public class Render extends ApplicationAdapter
             if(gameTime > map[x][y].getTime())
             {
                 if(Gdx.input.isKeyJustPressed(Keys.W) && map[x][y+1].isTraversable())
-                {player.moveY(1);}
+                {player.moveY(1); gameTime = 0;}
                 if(Gdx.input.isKeyJustPressed(Keys.A) && map[x-1][y].isTraversable())
-                {player.moveX(-1);}
+                {player.moveX(-1); gameTime = 0;}
                 if(Gdx.input.isKeyJustPressed(Keys.S) && map[x][y-1].isTraversable())
-                {player.moveY(-1);}
+                {player.moveY(-1); gameTime = 0;}
                 if(Gdx.input.isKeyJustPressed(Keys.D) && map[x+1][y].isTraversable())
-                {player.moveX(1);}
+                {player.moveX(1); gameTime = 0;}
             }
         }
 
-        renderer.begin();
+        batch.begin();
         if(gamestate == GameState.GAME)
         {
-            for(int r = 0; r < map.length ; r ++)
+            for(int r = 0 ; r < map.length ; r ++)
             {
                 for(int c = 0; c < map[r].length ; c ++)
                 {
-                    
+                    batch.draw(map[r][c].getTexture() ,(float) c * Constants.TILE_WIDTH, (float) (r + 1) * Constants.TILE_HEIGHT);
+                    if(r == y && c == x)
+                        batch.draw(player.texture(),(float) c * Constants.TILE_WIDTH, (float) (r + 1) * Constants.TILE_HEIGHT); 
                 }
             }
         }
-        renderer.end();
+        batch.end();
         gameTime ++;
     }
 
@@ -90,6 +99,13 @@ public class Render extends ApplicationAdapter
         renderer.dispose(); 
     }
 
+    @Override
+    public void resize(int width, int height)
+    {
+        viewport.update(width, height, true); 
+    }
+
+    
     private void genMap()
     {
         int randT = 0;

@@ -27,13 +27,7 @@ public class Tile
         this.texture = new Texture("assets/" + texture);
     }
     
-    public int getTime()
-    {
-        return time;
-    }
-    
-    public boolean isTraversable()
-    {
-        return traversable;
-    }
+    public int getTime() {return time;}
+    public boolean isTraversable() {return traversable;}
+    public Texture getTexture() {return texture;}
 }
