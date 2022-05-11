@@ -1,0 +1,15 @@
+#BlueJ class context
+comment0.target=Tile
+comment1.params=
+comment1.target=Tile()
+comment2.params=traversable
+comment2.target=Tile(boolean)
+comment3.params=traversable\ time\ texture
+comment3.target=Tile(boolean,\ int,\ java.lang.String)
+comment4.params=
+comment4.target=int\ getTime()
+comment5.params=
+comment5.target=boolean\ isTraversable()
+comment6.params=
+comment6.target=com.badlogic.gdx.graphics.Texture\ getTexture()
+numComments=7
