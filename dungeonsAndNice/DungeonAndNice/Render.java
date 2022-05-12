@@ -1,0 +1,157 @@
+import com.badlogic.gdx.ApplicationAdapter; 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.utils.viewport.*;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer; 
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Rectangle; 
+
+import com.badlogic.gdx.Input.Keys; 
+import com.badlogic.gdx.math.Vector2; 
+import com.badlogic.gdx.math.MathUtils; 
+import com.badlogic.gdx.math.Intersector; 
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.utils.*;
+import com.badlogic.gdx.*; 
+import java.util.*; 
+
+public class Render extends ApplicationAdapter
+{
+    private OrthographicCamera camera; //the camera to our world
+    private Viewport viewport; //maintains the ratios of your world
+    private ShapeRenderer renderer; //used to draw textures and fonts 
+    private SpriteBatch batch;
+
+    private GameState gamestate;
+    private Player player;
+
+    private int gameTime;
+    private Tile[][] map;
+
+    @Override//called once when we start the game
+    public void create()
+    {
+        camera = new OrthographicCamera(); 
+        viewport = new FitViewport(Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT, camera); 
+        renderer = new ShapeRenderer(); 
+        gamestate = GameState.GAME;
+        batch = new SpriteBatch();
+
+        player = new Player();
+        gameTime = 0;
+        map = new Tile[50][50];
+
+        genMap();
+    }
+
+    @Override//game loop - gets called 60 times a second
+    public void render()
+    {
+        viewport.apply();
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        int x = player.getX();
+        int y = player.getY();
+
+        if(gamestate == GameState.GAME)
+        {
+            if(gameTime > map[x][y].getTime())
+            {
+                if(Gdx.input.isKeyJustPressed(Keys.W) && map[x][y+1].isTraversable())
+                {player.moveY(1); gameTime = 0;}
+                if(Gdx.input.isKeyJustPressed(Keys.A) && map[x-1][y].isTraversable())
+                {player.moveX(-1); gameTime = 0;}
+                if(Gdx.input.isKeyJustPressed(Keys.S) && map[x][y-1].isTraversable())
+                {player.moveY(-1); gameTime = 0;}
+                if(Gdx.input.isKeyJustPressed(Keys.D) && map[x+1][y].isTraversable())
+                {player.moveX(1); gameTime = 0;}
+            }
+        }
+
+        batch.begin();
+        if(gamestate == GameState.GAME)
+        {
+            if(x > 2 && x < map[0].length - 3 && y > 2 && y < map.length - 3)
+            {
+                for(int r = y - 3 ; r < y + 4 ; r ++)
+                {
+                    for(int c = x - 3 ; c < x + 4 ; c ++)
+                    {
+                        batch.draw(map[r][c].getTexture() ,(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT);
+                        System.out.println(" " + x + " , " + y);
+                        if(r == y && c == x)
+                            batch.draw(player.texture(),(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
+                    }
+                }
+            }
+            else if(y <= 2)
+            {
+                for(int r = 0 ; r < 7 ; r ++)
+                {
+                    for(int c = x - 3 ; c < x + 4 ; c ++)
+                    {
+                        batch.draw(map[r][c].getTexture() ,(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r + 1) * Constants.TILE_HEIGHT);
+                        System.out.println(" " + x + " , " + y);
+                        if(r == y && c == x)
+                            batch.draw(player.texture(),(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r + 1) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
+                    }
+                }
+            }
+            else if(y >= map.length - 3)
+            {
+                for(int r = map.length - 7 ; r < map.length  ; r ++)
+                {
+                    for(int c = x - 3 ; c < x + 4 ; c ++)
+                    {
+                        batch.draw(map[r][c].getTexture() ,(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r  - (map.length - 7)) * Constants.TILE_HEIGHT);
+                        System.out.println(" " + x + " , " + y);
+                        if(r == y && c == x)
+                            batch.draw(player.texture(),(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r - (map.length - 7)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
+                    }
+                }
+            }
+        }
+        batch.end();
+        gameTime ++;
+    }
+
+    @Override
+    public void dispose()
+    {
+        renderer.dispose(); 
+    }
+
+    @Override
+    public void resize(int width, int height)
+    {
+        viewport.update(width, height, true); 
+    }
+
+    private void genMap()
+    {
+        int randT = 0;
+        for(int r = 0; r < map.length ; r ++)
+        {
+            for(int c = 0; c < map[r].length; c++)
+            {
+                if(r == 0 || c == 0 || r == map.length - 1 || c == map[r].length - 1)
+                    map[r][c] = Constants.BARRIER;
+                else
+                {
+                    randT = (int) (Math.random() * 3 + 1);
+                    if(randT == 1)
+                        map[r][c] = Constants.STONE;
+                    if(randT == 2)
+                        map[r][c] = Constants.SAND;
+                    if(randT == 3)
+                        map[r][c] = Constants.GRASS;
+                }
+            }
+        }
+    }
+}
