@@ -1,0 +1,11 @@
+#BlueJ class context
+comment0.target=Entity
+comment1.params=
+comment1.target=Entity()
+comment2.params=health
+comment2.target=Entity(double)
+comment3.params=damage
+comment3.target=void\ updateHealth(double)
+comment4.params=
+comment4.target=boolean\ checkDestroy()
+numComments=5
