@@ -1,0 +1,15 @@
+#BlueJ class context
+comment0.target=Render
+comment1.params=
+comment1.target=void\ create()
+comment2.params=
+comment2.target=void\ render()
+comment3.params=
+comment3.target=void\ dispose()
+comment4.params=width\ height
+comment4.target=void\ resize(int,\ int)
+comment5.params=
+comment5.target=void\ genMap()
+comment6.params=x1\ y1\ x2\ y2
+comment6.target=double\ findDistance(int,\ int,\ int,\ int)
+numComments=7
