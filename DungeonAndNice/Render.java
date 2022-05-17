@@ -64,37 +64,18 @@ public class Render extends ApplicationAdapter
         {
             if(gameTime > map[x][y].getTime())
             {
-                if(Gdx.input.isKeyJustPressed(Keys.W))
-                {
-                    if(map[x][y+1].isTraversable() && player.getDirection() == 1)
-                        {player.moveY(1); gameTime = 0;}
-                    else
-                        player.setDirection(1);
-                }
-                if(Gdx.input.isKeyJustPressed(Keys.A))
-                {
-                    if(map[x-1][y].isTraversable() && player.getDirection() == 4)
-                        {player.moveX(-1); gameTime = 0;}
-                    else
-                        player.setDirection(4);
-                }
-                if(Gdx.input.isKeyJustPressed(Keys.S))
-                {
-                    if(map[x][y-1].isTraversable() && player.getDirection() == 3)
-                        {player.moveY(-1); gameTime = 0;}
-                    else
-                        player.setDirection(3);
-                }
-                if(Gdx.input.isKeyJustPressed(Keys.D))
-                {
-                    if(map[x+1][y].isTraversable() && player.getDirection() == 2)
-                        {player.moveX(1); gameTime = 0;}
-                    else
-                        player.setDirection(2);
-                }
+                if(Gdx.input.isKeyJustPressed(Keys.W) && map[x][y+1].isTraversable())
+                {player.moveY(1); gameTime = 0; player.setDirection(1);}
+                if(Gdx.input.isKeyJustPressed(Keys.A) && map[x-1][y].isTraversable())
+                {player.moveX(-1); gameTime = 0; player.setDirection(4);}
+                if(Gdx.input.isKeyJustPressed(Keys.S) && map[x][y-1].isTraversable())
+                {player.moveY(-1); gameTime = 0; player.setDirection(3);}      
+                if(Gdx.input.isKeyJustPressed(Keys.D) && map[x+1][y].isTraversable())
+                {player.moveX(1); gameTime = 0; player.setDirection(2);}
             }
         }
-
+        player.update();
+        
         batch.begin();
         if(gamestate == GameState.GAME)
         {
