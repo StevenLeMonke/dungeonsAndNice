@@ -20,11 +20,12 @@ public class Tile
         this.texture = new Texture("assets/Barrier.png");
     }
     
-    public Tile(boolean traversable, int time, String texture)
+    public Tile(boolean traversable, int time, String[] texture)
     {
         this.traversable = traversable;
         this.time = time;
-        this.texture = new Texture("assets/" + texture);
+        int randT = (int) (Math.random() * 4);
+        this.texture = new Texture("assets/" + texture[randT]);
     }
     
     public int getTime() {return time;}

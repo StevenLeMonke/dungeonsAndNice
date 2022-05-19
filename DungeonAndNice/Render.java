@@ -30,8 +30,11 @@ public class Render extends ApplicationAdapter
     private GameState gamestate;
     private Player player;
 
-    private int gameTime;
+    private double gameTime;
+    private double attackCooldownTime;
     private Tile[][] map;
+
+    private ArrayList<Enemy> enemies; 
 
     @Override//called once when we start the game
     public void create()
@@ -46,7 +49,10 @@ public class Render extends ApplicationAdapter
 
         player = new Player();
         gameTime = 0;
+        attackCooldownTime = 0;
         map = new Tile[50][50];
+
+        enemies = new ArrayList<Enemy>();
 
         genMap();
     }
@@ -62,7 +68,7 @@ public class Render extends ApplicationAdapter
 
         if(gamestate == GameState.GAME)
         {
-            if(gameTime > map[x][y].getTime())
+            if(gameTime * Item.moveSpeed > map[x][y].getTime())
             {
                 if(Gdx.input.isKeyJustPressed(Keys.W) && map[x][y+1].isTraversable())
                 {player.moveY(1); gameTime = 0; player.setDirection(1);}
@@ -73,9 +79,25 @@ public class Render extends ApplicationAdapter
                 if(Gdx.input.isKeyJustPressed(Keys.D) && map[x+1][y].isTraversable())
                 {player.moveX(1); gameTime = 0; player.setDirection(2);}
             }
+            if(attackCooldownTime * Item.attackSpeed > 30 && Gdx.input.isKeyJustPressed(Keys.SPACE))
+            {
+                for(int i = 0; i < enemies.size(); i++)
+                {
+                    Enemy temp = enemies.get(i);
+                    if(temp.getX() == x && temp.getY() == y + 1)
+                    {player.setDirection(1); player.attack(temp);}
+                    if(temp.getX() == x && temp.getY() == y - 1)
+                    {player.setDirection(3); player.attack(temp);}
+                    if(temp.getX() == x + 1 && temp.getY() == y)
+                    {player.setDirection(2); player.attack(temp);}
+                    if(temp.getX() == x - 1 && temp.getY() == y)
+                    {player.setDirection(4); player.attack(temp);}
+                }
+                
+            }
         }
         player.update();
-        
+
         batch.begin();
         if(gamestate == GameState.GAME)
         {

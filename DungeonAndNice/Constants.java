@@ -9,8 +9,8 @@ public class Constants
     public static final double PLAYER_SPEED = 0;   
     public static final double ENEMY_SPEED = 0;
     
-    public static final Tile STONE = new Tile(true, 5, "CobbleV2.png");
-    public static final Tile GRASS = new Tile(true, 7, "GrassV1.png");
+    public static final Tile STONE = new Tile(true, 5, new String[] {"CobbleV1.png" , "CobbleV2.png" , "CobbleV3.png" , "CobbleV4.png"});
+    public static final Tile GRASS = new Tile(true, 7, new String[] {"GrassV1.png" , "GrassV2.png" , "GrassV3.png" , "GrassV4.png"});
     public static final Tile BARRIER = new Tile(false); //auto barrier.png
-    public static final Tile SAND = new Tile(true, 10, "SandV1.png");
+    public static final Tile SAND = new Tile(true, 10, new String[] {"SandV1.png" , "SandV2.png" , "SandV3.png" , "SandV4.png"});
 }

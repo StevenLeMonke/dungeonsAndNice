@@ -19,9 +19,15 @@ public class Player extends Entity
         textures = new Texture[] {new Texture("assets/PlayerUp.png"), new Texture("assets/PlayerRight.png"), new Texture("assets/PlayerDown.png"), new Texture("assets/PlayerLeft.png")};
     }
 
-    public void attack(Entity e, int playerDamage)
+    public void attack(Entity e)
     {
-        e.updateHealth(playerDamage);
+        e.updateHealth(10 * Item.damageMulti);
+        
+    }
+    
+    public void attack()
+    {
+        
     }
 
     public void update()  {this.texture = textures[this.direction - 1];}
