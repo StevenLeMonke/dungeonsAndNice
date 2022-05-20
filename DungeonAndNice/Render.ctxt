@@ -10,4 +10,6 @@ comment4.params=width\ height
 comment4.target=void\ resize(int,\ int)
 comment5.params=
 comment5.target=void\ genMap()
-numComments=6
+comment6.params=x1\ y1\ x2\ y2
+comment6.target=double\ findDistance(int,\ int,\ int,\ int)
+numComments=7

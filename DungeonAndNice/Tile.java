@@ -30,4 +30,5 @@ public class Tile
     public int getTime() {return time;}
     public boolean isTraversable() {return traversable;}
     public Texture getTexture() {return texture;}
+    public void makeTraversable(boolean obs) {this.traversable = obs;}
 }

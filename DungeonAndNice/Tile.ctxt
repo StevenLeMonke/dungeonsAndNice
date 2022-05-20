@@ -12,4 +12,6 @@ comment5.params=
 comment5.target=boolean\ isTraversable()
 comment6.params=
 comment6.target=com.badlogic.gdx.graphics.Texture\ getTexture()
-numComments=7
+comment7.params=obs
+comment7.target=void\ makeTraversable(boolean)
+numComments=8
