@@ -28,5 +28,5 @@ public class Entity
     
     public void setDirection(int d) {this.direction = d;}
     public int getDirection() {return direction;}
-    
+    public double getHealth() {return health;}
 }
