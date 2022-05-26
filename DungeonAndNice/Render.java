@@ -30,12 +30,19 @@ public class Render extends ApplicationAdapter
     private GameState gamestate;
     private Player player;
 
-    private double gameTime;
-    private double attackCooldownTime;
+    private int gameTime;
+    private int attackCooldownTime;
+    private int enemyTime;
+    
     private Tile[][] map;
+    private Enemy[][] enemyMap;
+    private BitmapFont font;
 
     private ArrayList<Enemy> enemies;
     private ArrayList<Chest> chests;
+
+    private float xOffset;
+    private float yOffset;
 
     @Override//called once when we start the game
     public void create()
@@ -51,10 +58,18 @@ public class Render extends ApplicationAdapter
         player = new Player();
         gameTime = 0;
         attackCooldownTime = 0;
-        map = new Tile[50][50];
+        enemyTime = 0;
+        map = new Tile[52][52];
+
+        font = new BitmapFont();
 
         enemies = new ArrayList<Enemy>();
         chests = new ArrayList<Chest>();
+
+        enemies.add(new Enemy(player.getX(), player.getY() + 2, 1));
+
+        xOffset = 0;
+        yOffset = 0;
 
         genMap();
     }
@@ -70,214 +85,129 @@ public class Render extends ApplicationAdapter
 
         if(gamestate == GameState.GAME)
         {
+            // if(player.getDirection() == 1)
+            // {
+            // if(gameTime == 15 && map[y+1][x].isTraversable())
+            // {
+            // player.moveY(1);
+            // yOffset = 0;    
+            // }
+            // else if(gameTime < 15)
+            // yOffset = -1 * (float) gameTime / 15f * (float)Constants.TILE_HEIGHT;
+            // }
             if(gameTime * Item.moveSpeed > map[x][y].getTime())
             {
-                if(Gdx.input.isKeyJustPressed(Keys.W) && map[y+1][x].isTraversable())
-                {player.moveY(1); gameTime = 0; player.setDirection(1);}
-                if(Gdx.input.isKeyJustPressed(Keys.A) && map[y][x-1].isTraversable())
-                {player.moveX(-1); gameTime = 0; player.setDirection(4);}
-                if(Gdx.input.isKeyJustPressed(Keys.S) && map[y-1][x].isTraversable())
-                {player.moveY(-1); gameTime = 0; player.setDirection(3);}      
-                if(Gdx.input.isKeyJustPressed(Keys.D) && map[y][x+1].isTraversable())
-                {player.moveX(1); gameTime = 0; player.setDirection(2);}
+                if(Gdx.input.isKeyJustPressed(Keys.W) && gameTime > 15)
+                {
+                    if(map[y+1][x].isTraversable())
+                    {player.moveY(1); gameTime = 0;}
+                    player.setDirection(1);
+                }
+                if(Gdx.input.isKeyJustPressed(Keys.A) && gameTime > 15)
+                {
+                    if(map[y][x-1].isTraversable())
+                    {player.moveX(-1); gameTime = 0;}
+                    player.setDirection(4);
+                }
+                if(Gdx.input.isKeyJustPressed(Keys.S) && gameTime > 15)
+                {
+                    if(map[y-1][x].isTraversable())
+                    {player.moveY(-1); gameTime = 0;}
+                    player.setDirection(3);
+                }      
+                if(Gdx.input.isKeyJustPressed(Keys.D) && gameTime > 15)
+                {
+                    if(map[y][x+1].isTraversable())
+                    {player.moveX(1); gameTime = 0;}
+                    player.setDirection(2);
+                }
             }
-            if(attackCooldownTime * Item.attackSpeed > 30 && Gdx.input.isKeyJustPressed(Keys.SPACE))
+
+            if(Gdx.input.isKeyJustPressed(Keys.SPACE) && attackCooldownTime * Item.attackSpeed > 30)
             {
+                System.out.println("attacked");
                 for(int i = 0; i < enemies.size(); i++)
                 {
                     Enemy temp = enemies.get(i);
-                    if(temp.getX() == x && temp.getY() == y + 1)
-                    {player.setDirection(1); player.attack(temp);}
+                    if(temp.getX() == x && temp.getY() == y + 1) //col same : row + 1
+                    {player.setDirection(1); player.attack(temp); attackCooldownTime = 0;}
                     if(temp.getX() == x && temp.getY() == y - 1)
-                    {player.setDirection(3); player.attack(temp);}
+                    {player.setDirection(3); player.attack(temp); attackCooldownTime = 0;}
                     if(temp.getX() == x + 1 && temp.getY() == y)
-                    {player.setDirection(2); player.attack(temp);}
+                    {player.setDirection(2); player.attack(temp); attackCooldownTime = 0;}
                     if(temp.getX() == x - 1 && temp.getY() == y)
-                    {player.setDirection(4); player.attack(temp);}
+                    {player.setDirection(4); player.attack(temp); attackCooldownTime = 0;}
                 }
+            }
 
+            if(player.getHealth() <= 0) {}
+
+            for(int i = 0; i < enemies.size(); i++)
+            {
+                Enemy temp = enemies.get(i);
+                if(temp.getHealth() <= 0)
+                    enemies.remove(i);
+                if(enemyTime == 60)
+                {
+                    moveEnemy(temp);
+                    enemyTime = 0;
+                }
+                temp.update();
             }
         }
         player.update();
+        
+        if(gamestate == GameState.MENU)
+        {
+
+        }
 
         batch.begin();
+        renderer.begin(ShapeType.Filled);
+        renderer.setColor(Color.RED);
+
+        if(gamestate == GameState.MENU)
+        {
+
+        }
+
         if(gamestate == GameState.GAME)
         {
             if(x > 2 && y > 2 && x < map[0].length - 3 && y < map.length - 3)
             {
-                for(int r = y - 3 ; r <= y + 3 ; r ++)
+                for(int r = y - 4 ; r <= y + 4 ; r ++)
                 {
-                    for(int c = x - 3; c <= x + 3 ; c ++)
+                    for(int c = x - 4; c <= x + 4 ; c ++)
                     {
-                        batch.draw(map[r][c].getTexture() ,(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT);
-                        if(r == y && c == x)
-                            batch.draw(player.texture(),(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
+                        batch.draw(map[r][c].getTexture() ,(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT + yOffset);
+                        // if(r == y && c == x)
+                        // batch.draw(player.texture(),(float) 3f * Constants.TILE_WIDTH, 3f * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
                         for(int i = 0; i < chests.size() ; i++)
                         {
                             if(chests.get(i).getX() == c && chests.get(i).getY() == r)
                             {
-                                batch.draw(chests.get(i).texture(),(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
+                                batch.draw(chests.get(i).texture(),(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT  + yOffset, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
+                            }
+                        }
+                        for(int i = 0; i < enemies.size() ; i++)
+                        {
+                            if(enemies.get(i).getX() == c && enemies.get(i).getY() == r)
+                            {
+                                batch.draw(enemies.get(i).texture(),(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT  + yOffset, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
+                                renderer.rect((float) (c - (x - 3)) * Constants.TILE_WIDTH + (Constants.TILE_WIDTH / 6), (float) (r - (y - 3)) * Constants.TILE_HEIGHT + (Constants.TILE_HEIGHT / 7)  + yOffset, Constants.TILE_WIDTH / 1.5f - ((float) (enemies.get(i).getMaxHealth() - enemies.get(i).getHealth()) / (float) enemies.get(i).getMaxHealth() * Constants.TILE_WIDTH / 1.5f), Constants.TILE_HEIGHT / 14);
                             }
                         }
                     }
                 }
-            }
-            else if(x <= 3 && y <= 3)
-            {
-                for(int r = 0 ; r < 7 ; r ++)
-                {
-                    for(int c = 0 ; c < 7 ; c ++)
-                    {
-                        batch.draw(map[r][c].getTexture(),(float) c * Constants.TILE_WIDTH, (float) r * Constants.TILE_HEIGHT);
-                        if(r == y && c == x)
-                            batch.draw(player.texture(),(float) c * Constants.TILE_WIDTH, (float) r * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
-                        for(int i = 0; i < chests.size() ; i++)
-                        {
-                            if(chests.get(i).getX() == c && chests.get(i).getY() == r)
-                            {
-                                batch.draw(chests.get(i).texture(),(float) c * Constants.TILE_WIDTH, (float) r * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
-                            }
-                        }
-                    }
-                }
-            }
-            else if(x >= map[0].length - 4 && y <= 3)
-            {
-                for(int r = 0 ; r < 7 ; r ++)
-                {
-                    for(int c = map[0].length - 7; c < map[0].length ; c ++)
-                    {
-                        batch.draw(map[r][c].getTexture(),(float) (c - (map[0].length - 7)) * Constants.TILE_WIDTH, (float) r * Constants.TILE_HEIGHT);
-                        if(r == y && c == x)
-                            batch.draw(player.texture(),(float) (c - (map[0].length - 7)) * Constants.TILE_WIDTH, (float) r * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
-                        for(int i = 0; i < chests.size() ; i++)
-                        {
-                            if(chests.get(i).getX() == c && chests.get(i).getY() == r)
-                            {
-                                batch.draw(chests.get(i).texture(),(float) (c - (map[0].length - 7)) * Constants.TILE_WIDTH, (float) r * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
-                            }
-                        }
-                    }
-                }
-            }
-            else if(x <= 3 && y >= map.length - 4)
-            {
-                for(int r = map.length - 7; r < map.length ; r ++)
-                {
-                    for(int c = 0 ; c < 7 ; c ++)
-                    {
-                        batch.draw(map[r][c].getTexture(),(float) c * Constants.TILE_WIDTH, (float) (r - (map[0].length - 7)) * Constants.TILE_HEIGHT);
-                        if(r == y && c == x)
-                            batch.draw(player.texture(),(float) c * Constants.TILE_WIDTH, (float) (r - (map[0].length - 7)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
-                        for(int i = 0; i < chests.size() ; i++)
-                        {
-                            if(chests.get(i).getX() == c && chests.get(i).getY() == r)
-                            {
-                                batch.draw(chests.get(i).texture(),(float) c * Constants.TILE_WIDTH, (float) (r - (map[0].length - 7)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
-                            }
-                        }
-                    }
-                }
-            }
-            else if(x >= map[0].length && y >= map.length - 4)
-            {
-                for(int r = map.length - 7; r < map.length ; r ++)
-                {
-                    for(int c = map[0].length - 7; c < map[0].length ; c ++)
-                    {
-                        batch.draw(map[r][c].getTexture(),(float) (c - (map[0].length - 7)) * Constants.TILE_WIDTH, (float) (r - (map[0].length - 7)) * Constants.TILE_HEIGHT);
-                        if(r == y && c == x)
-                            batch.draw(player.texture(),(float) (c - (map[0].length - 7)) * Constants.TILE_WIDTH, (float) (r - (map[0].length - 7)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
-                        for(int i = 0; i < chests.size() ; i++)
-                        {
-                            if(chests.get(i).getX() == c && chests.get(i).getY() == r)
-                            {
-                                batch.draw(chests.get(i).texture(),(float) (c - (map[0].length - 7)) * Constants.TILE_WIDTH, (float) (r - (map[0].length - 7)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT);
-                            }
-                        }
-                    }
-                }
-            }
-            else if(x <= 3)
-            {
-                for(int r = y - 3 ; r <= y + 3 ; r ++)
-                {
-                    for(int c = 0; c < 7 ; c ++)
-                    {
-                        batch.draw(map[r][c].getTexture() ,(float) c * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT);
-                        if(r == y && c == x)
-                            batch.draw(player.texture(),(float) c * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
-                        for(int i = 0; i < chests.size() ; i++)
-                        {
-                            if(chests.get(i).getX() == c && chests.get(i).getY() == r)
-                            {
-                                batch.draw(chests.get(i).texture(),(float) c * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT);
-                            }
-                        }
-                    }
-                }
-            }
-            else if(x >= map[0].length - 4)
-            {
-                for(int r = y - 3 ; r <= y + 3 ; r ++)
-                {
-                    for(int c = map[0].length - 7; c < map[0].length ; c ++)
-                    {
-                        batch.draw(map[r][c].getTexture() ,(float) (c - (map[0].length - 7)) * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT);
-                        if(r == y && c == x)
-                            batch.draw(player.texture(),(float) (c - (map[0].length - 7)) * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
-                        for(int i = 0; i < chests.size() ; i++)
-                        {
-                            if(chests.get(i).getX() == c && chests.get(i).getY() == r)
-                            {
-                                batch.draw(chests.get(i).texture(),(float) (c - (map[0].length - 7)) * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT);
-                            }
-                        }
-                    }
-                }
-            }
-            else if(y <= 3)
-            {
-                for(int r = 0 ; r < 7 ; r ++)
-                {
-                    for(int c = x - 3; c <= x + 3 ; c ++)
-                    {
-                        batch.draw(map[r][c].getTexture() ,(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) r * Constants.TILE_HEIGHT);
-                        if(r == y && c == x)
-                            batch.draw(player.texture(),(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) r * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
-                        for(int i = 0; i < chests.size() ; i++)
-                        {
-                            if(chests.get(i).getX() == c && chests.get(i).getY() == r)
-                            {
-                                batch.draw(chests.get(i).texture(),(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) r * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT);
-                            }
-                        }
-                    }
-                }
-            }
-            else if(y >= map[0].length - 4)
-            {
-                for(int r = map.length - 7; r < map.length ; r ++)
-                {
-                    for(int c = x - 3; c <= x + 3 ; c ++)
-                    {
-                        batch.draw(map[r][c].getTexture() ,(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r - (map.length - 7)) * Constants.TILE_HEIGHT);
-                        if(r == y && c == x)
-                            batch.draw(player.texture(),(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r - (map.length - 7)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
-                        for(int i = 0; i < chests.size() ; i++)
-                        {
-                            if(chests.get(i).getX() == c && chests.get(i).getY() == r)
-                            {
-                                batch.draw(chests.get(i).texture(),(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r - (map.length - 7)) * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT);
-                            }
-                        } 
-                    }
-                }
+                batch.draw(player.texture(),(float) 3f * Constants.TILE_WIDTH, 3f * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT);
             }
         }
 
         batch.end();
+        renderer.end();
         gameTime ++;
+        attackCooldownTime ++;
+        enemyTime ++;
     }
 
     @Override
@@ -292,7 +222,6 @@ public class Render extends ApplicationAdapter
         viewport.update(width, height, true); 
     }
 
-
     private void genMap()
     {
         int[][] randOriginal = new int[(int) (Math.random() * (35 - 15 + 1) + 15)][3];
@@ -306,14 +235,14 @@ public class Render extends ApplicationAdapter
 
         for(int i = 0; i < randOriginal.length; i ++)
         {
-            randX = (int) (Math.random() * (map[0].length - 2) + 1);
-            randY = (int) (Math.random() * (map.length - 2) + 1);
+            randX = (int) (Math.random() * (map[0].length - 5) + 4);
+            randY = (int) (Math.random() * (map.length - 5) + 4);
             randT = (int) (Math.random() * 3);
 
             randOriginal[i] = new int[] {randX, randY, randT};
             chests.add(new Chest(randX, randY));
 
-            map[randY][randX] = tiles[randT];
+            map[randY][randX] = Constants.BARRIER;
         }
 
         double temp = Integer.MAX_VALUE;
@@ -324,7 +253,7 @@ public class Render extends ApplicationAdapter
         {
             for(int c = 0; c < map[r].length; c++)
             {
-                if(r == 0 || c == 0 || r == map.length - 1 || c == map[r].length - 1)
+                if(r <= 3 || c <= 3 || r >= map.length - 4 || c >= map[r].length - 4)
                     map[r][c] = Constants.BARRIER;
                 else
                 {
@@ -341,6 +270,11 @@ public class Render extends ApplicationAdapter
                 }
             }
         }
+
+        for(int i = 0; i < randOriginal.length ; i ++)
+        {
+            map[randOriginal[i][1]][randOriginal[i][0]] = Constants.BARRIER;
+        }
     }
 
     private double findDistance(int x1, int y1, int x2, int y2)
@@ -350,5 +284,59 @@ public class Render extends ApplicationAdapter
 
         return Math.sqrt(Math.pow(xd, 2) + Math.pow(yd, 2));
     }
-}
 
+    private void checkAggro(Enemy temp)
+    {
+        if(findDistance(player.getX(), player.getY(), temp.getX(), temp.getY()) <= 5)
+            temp.setAggro(true);
+    }
+
+    private void moveEnemy(Enemy temp)
+    {
+        int randN = 0;
+        if(attack(temp)) {}
+        else
+        {
+            if(temp.getAggro())
+            {
+                randN = (int) (Math.random() * 10);
+                if(randN < 5)
+                {
+                    if(temp.getX() > player.getX())
+                    {temp.moveX(-1); temp.setDirection(4);}
+                    else if(temp.getX() < player.getX())
+                    {temp.moveX(1); temp.setDirection(2);}
+                }
+                else
+                {
+                    if(temp.getY() > player.getY())
+                        temp.moveY(-1);
+                    else if(temp.getY() < player.getY())
+                        temp.moveY(1);
+                }
+            }
+            else
+            {
+                randN = (int) (Math.random() * 4) + 1;
+                if(randN == 1)
+                {temp.moveY(1);}
+                else if(randN == 2)
+                {temp.moveX(1); temp.setDirection(2);}
+                else if(randN == 3)
+                {temp.moveY(-1);}
+                else if(randN == 4)
+                {temp.moveX(-1); temp.setDirection(4);}
+            }
+        }
+    }
+
+    private boolean attack(Enemy temp)
+    {
+        if((Math.abs(temp.getX() - player.getX()) == 1 && temp.getY() == player.getY()) || (Math.abs(temp.getY() - player.getY()) == 1 && temp.getX() == player.getX()))
+        {
+            player.updateHealth(temp.getDamage());
+            return true;
+        }
+        return false;
+    }
+}
