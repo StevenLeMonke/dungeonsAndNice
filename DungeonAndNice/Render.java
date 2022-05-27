@@ -33,7 +33,7 @@ public class Render extends ApplicationAdapter
     private int gameTime;
     private int attackCooldownTime;
     private int enemyTime;
-    
+
     private Tile[][] map;
     private Enemy[][] enemyMap;
     private BitmapFont font;
@@ -147,16 +147,13 @@ public class Render extends ApplicationAdapter
                 Enemy temp = enemies.get(i);
                 if(temp.getHealth() <= 0)
                     enemies.remove(i);
-                if(enemyTime == 60)
-                {
-                    moveEnemy(temp);
-                    enemyTime = 0;
-                }
+                if(enemyTime > 45)
+                    if(randomMove(temp)) {enemyTime = 0;}
                 temp.update();
             }
         }
         player.update();
-        
+
         if(gamestate == GameState.MENU)
         {
 
@@ -201,6 +198,10 @@ public class Render extends ApplicationAdapter
                 }
                 batch.draw(player.texture(),(float) 3f * Constants.TILE_WIDTH, 3f * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT);
             }
+            
+            renderer.setColor(Color.BLACK);
+            renderer.rect(Constants.WORLD_WIDTH - Constants.WORLD_WIDTH/2.5f, 0, Constants.WORLD_WIDTH/2.5f, Constants.WORLD_HEIGHT/12);
+            renderer.rect(Constants.WORLD_WIDTH - Constants.WORLD_WIDTH/7, Constants.WORLD_HEIGHT/12, Constants.WORLD_WIDTH/7,Constants.WORLD_HEIGHT/7);
         }
 
         batch.end();
@@ -337,6 +338,24 @@ public class Render extends ApplicationAdapter
             player.updateHealth(temp.getDamage());
             return true;
         }
+        return false;
+    }
+
+    private boolean randomMove(Enemy temp)
+    {
+        int randI = (int) (Math.random() * 4 + 1);
+        if(randI == 1 && map[temp.getY() + 1][temp.getX()].isTraversable())
+            {temp.moveY(1); return true;}
+        else if(randI == 2 && map[temp.getY()][temp.getX() + 1].isTraversable())
+            {temp.moveX(1); return true;}
+        else if(randI == 3 && map[temp.getY() - 1][temp.getX()].isTraversable())
+            {temp.moveY(-1); return true;}
+        else if(randI == 4 && map[temp.getY()][temp.getX() - 1].isTraversable())
+            {temp.moveX(-1); return true;}
+        if(temp.getAltTexture())
+                temp.anime(false);
+            else
+                temp.anime(true);
         return false;
     }
 }

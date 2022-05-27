@@ -29,7 +29,8 @@ public class Enemy extends Entity
 
         this.aggro = false;
 
-        this.textures = new  Texture[] {new Texture("assets/Fishy.png"), new Texture("assets/FishyFlap.png")};
+        this.textures = new  Texture[] {new Texture("assets/Fishy.png"), new Texture("assets/FishyFlap.png"),
+            new Texture("assets/FishyRight.png"), new Texture("assets/FishyFlapRight.png")};
         this.texture = textures[0];
         this.altTexture = false;
     }
@@ -67,6 +68,10 @@ public class Enemy extends Entity
     public void setAggro(boolean temp) {aggro = temp;}
 
     public boolean getAggro() {return aggro;}
-    
+
     public double getDamage() {return damage;}
+
+    public void anime(boolean temp) {altTexture = temp;}
+
+    public boolean getAltTexture() {return altTexture;}
 }
