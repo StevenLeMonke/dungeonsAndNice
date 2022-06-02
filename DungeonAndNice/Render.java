@@ -29,10 +29,10 @@ public class Render extends ApplicationAdapter
 
     private GameState gamestate;
     private Player player;
+    private double playerMaxHealth;
 
     private int gameTime;
     private int attackCooldownTime;
-    private int enemyTime;
 
     private Tile[][] map;
     private Enemy[][] enemyMap;
@@ -56,9 +56,9 @@ public class Render extends ApplicationAdapter
         camera.viewportHeight = Constants.TILE_HEIGHT * 5;
 
         player = new Player();
+        playerMaxHealth = player.getHealth();
         gameTime = 0;
         attackCooldownTime = 0;
-        enemyTime = 0;
         map = new Tile[52][52];
 
         font = new BitmapFont();
@@ -125,7 +125,6 @@ public class Render extends ApplicationAdapter
 
             if(Gdx.input.isKeyJustPressed(Keys.SPACE) && attackCooldownTime * Item.attackSpeed > 30)
             {
-                System.out.println("attacked");
                 for(int i = 0; i < enemies.size(); i++)
                 {
                     Enemy temp = enemies.get(i);
@@ -147,8 +146,19 @@ public class Render extends ApplicationAdapter
                 Enemy temp = enemies.get(i);
                 if(temp.getHealth() <= 0)
                     enemies.remove(i);
-                if(enemyTime > 45)
-                    if(randomMove(temp)) {enemyTime = 0;}
+                checkAggro(temp);
+                
+                if(temp.enemyTime() > 45)
+                {
+                    if(attack(temp))
+                    {temp.setEnemyTime(0);}
+                    else if(!temp.getAggro()) 
+                    {randomMove(temp);
+                        temp.setEnemyTime(0);}
+                    else 
+                    {moveEnemy(temp);
+                        temp.setEnemyTime(0);}
+                }
                 temp.update();
             }
         }
@@ -190,25 +200,33 @@ public class Render extends ApplicationAdapter
                         {
                             if(enemies.get(i).getX() == c && enemies.get(i).getY() == r)
                             {
-                                batch.draw(enemies.get(i).texture(),(float) (c - (x - 3)) * Constants.TILE_WIDTH, (float) (r - (y - 3)) * Constants.TILE_HEIGHT  + yOffset, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
-                                renderer.rect((float) (c - (x - 3)) * Constants.TILE_WIDTH + (Constants.TILE_WIDTH / 6), (float) (r - (y - 3)) * Constants.TILE_HEIGHT + (Constants.TILE_HEIGHT / 7)  + yOffset, Constants.TILE_WIDTH / 1.5f - ((float) (enemies.get(i).getMaxHealth() - enemies.get(i).getHealth()) / (float) enemies.get(i).getMaxHealth() * Constants.TILE_WIDTH / 1.5f), Constants.TILE_HEIGHT / 14);
+                                batch.draw(enemies.get(i).texture(),(float) (c - (x - 3)) * Constants.TILE_WIDTH, 
+                                    (float) (r - (y - 3)) * Constants.TILE_HEIGHT  + yOffset, Constants.TILE_WIDTH, Constants.TILE_HEIGHT); 
+                                renderer.rect((float) (c - (x - 3)) * Constants.TILE_WIDTH + (Constants.TILE_WIDTH / 6), 
+                                    (float) (r - (y - 3)) * Constants.TILE_HEIGHT + (Constants.TILE_HEIGHT / 7)  + yOffset, 
+                                    Constants.TILE_WIDTH / 1.5f - ((float) (enemies.get(i).getMaxHealth() - enemies.get(i).getHealth())
+                                        / (float) enemies.get(i).getMaxHealth() * Constants.TILE_WIDTH / 1.5f), Constants.TILE_HEIGHT / 14);
                             }
                         }
                     }
                 }
                 batch.draw(player.texture(),(float) 3f * Constants.TILE_WIDTH, 3f * Constants.TILE_HEIGHT, Constants.TILE_WIDTH, Constants.TILE_HEIGHT);
             }
-            
+
             renderer.setColor(Color.BLACK);
             renderer.rect(Constants.WORLD_WIDTH - Constants.WORLD_WIDTH/2.5f, 0, Constants.WORLD_WIDTH/2.5f, Constants.WORLD_HEIGHT/12);
             renderer.rect(Constants.WORLD_WIDTH - Constants.WORLD_WIDTH/7, Constants.WORLD_HEIGHT/12, Constants.WORLD_WIDTH/7,Constants.WORLD_HEIGHT/7);
+
+            renderer.setColor(Color.RED);
+            renderer.rect(Constants.WORLD_WIDTH - Constants.WORLD_WIDTH/2.75f, Constants.WORLD_HEIGHT / 60, Constants.WORLD_WIDTH/3f - (float) (playerMaxHealth - player.getHealth()), Constants.WORLD_HEIGHT/20);
+
+            //font.draw(batch, _GlyphLayout_, _float_, _float_)
         }
 
         batch.end();
         renderer.end();
         gameTime ++;
         attackCooldownTime ++;
-        enemyTime ++;
     }
 
     @Override
@@ -232,16 +250,18 @@ public class Render extends ApplicationAdapter
 
         Tile[] tiles = {Constants.STONE1 , Constants.STONE2 , Constants.STONE3 , Constants.STONE4 ,
                 Constants.GRASS1 , Constants.GRASS2 , Constants.GRASS3 , Constants.GRASS4 , 
-                Constants.SAND1 , Constants.SAND2 , Constants.SAND3 , Constants.SAND4 , };
+                Constants.SAND1 , Constants.SAND2 , Constants.SAND3 , Constants.SAND4};
 
         for(int i = 0; i < randOriginal.length; i ++)
         {
-            randX = (int) (Math.random() * (map[0].length - 5) + 4);
-            randY = (int) (Math.random() * (map.length - 5) + 4);
+            randX = (int) (Math.random() * (map[0].length - 10) + 5);
+            randY = (int) (Math.random() * (map.length - 10) + 5);
             randT = (int) (Math.random() * 3);
 
             randOriginal[i] = new int[] {randX, randY, randT};
             chests.add(new Chest(randX, randY));
+            enemies.add(new Enemy(randX + 1, randY + 1, 1));
+            enemies.add(new Enemy(randX - 1, randY + 1, 1));
 
             map[randY][randX] = Constants.BARRIER;
         }
@@ -288,47 +308,21 @@ public class Render extends ApplicationAdapter
 
     private void checkAggro(Enemy temp)
     {
-        if(findDistance(player.getX(), player.getY(), temp.getX(), temp.getY()) <= 5)
+        if(!temp.getAggro() && findDistance(player.getX(), player.getY(), temp.getX(), temp.getY()) <= 5)
             temp.setAggro(true);
     }
 
     private void moveEnemy(Enemy temp)
     {
-        int randN = 0;
-        if(attack(temp)) {}
-        else
-        {
-            if(temp.getAggro())
-            {
-                randN = (int) (Math.random() * 10);
-                if(randN < 5)
-                {
-                    if(temp.getX() > player.getX())
-                    {temp.moveX(-1); temp.setDirection(4);}
-                    else if(temp.getX() < player.getX())
-                    {temp.moveX(1); temp.setDirection(2);}
-                }
-                else
-                {
-                    if(temp.getY() > player.getY())
-                        temp.moveY(-1);
-                    else if(temp.getY() < player.getY())
-                        temp.moveY(1);
-                }
-            }
-            else
-            {
-                randN = (int) (Math.random() * 4) + 1;
-                if(randN == 1)
-                {temp.moveY(1);}
-                else if(randN == 2)
-                {temp.moveX(1); temp.setDirection(2);}
-                else if(randN == 3)
-                {temp.moveY(-1);}
-                else if(randN == 4)
-                {temp.moveX(-1); temp.setDirection(4);}
-            }
-        }
+        int randI = (int) (Math.random() * 2);
+        if(randI == 0 && temp.getX() > player.getX() && checkValidMove(temp, 4))
+        {temp.moveX(-1); temp.setDirection(4);}
+        else if(randI == 0 && temp.getX() < player.getX() && checkValidMove(temp, 2))
+        {temp.moveX(1); temp.setDirection(2);}
+        if(randI == 1 && temp.getY() > player.getY() && checkValidMove(temp, 3))
+            temp.moveY(-1);
+        else if(randI == 1 && temp.getY() < player.getY() && checkValidMove(temp, 1))
+            temp.moveY(1);
     }
 
     private boolean attack(Enemy temp)
@@ -341,21 +335,33 @@ public class Render extends ApplicationAdapter
         return false;
     }
 
-    private boolean randomMove(Enemy temp)
+    private void randomMove(Enemy temp)
     {
-        int randI = (int) (Math.random() * 4 + 1);
-        if(randI == 1 && map[temp.getY() + 1][temp.getX()].isTraversable())
-            {temp.moveY(1); return true;}
-        else if(randI == 2 && map[temp.getY()][temp.getX() + 1].isTraversable())
-            {temp.moveX(1); return true;}
-        else if(randI == 3 && map[temp.getY() - 1][temp.getX()].isTraversable())
-            {temp.moveY(-1); return true;}
-        else if(randI == 4 && map[temp.getY()][temp.getX() - 1].isTraversable())
-            {temp.moveX(-1); return true;}
+        int randI = (int) (Math.random() * 6 + 1);
+        if(randI == 1 && checkValidMove(temp, 1))
+        {temp.moveY(1);}
+        else if(randI == 2 && checkValidMove(temp, 2))
+        {temp.moveX(1); temp.setDirection(2);}
+        else if(randI == 3 && checkValidMove(temp, 3))
+        {temp.moveY(-1);}
+        else if(randI == 4 && checkValidMove(temp, 4))
+        {temp.moveX(-1); temp.setDirection(4);}
         if(temp.getAltTexture())
-                temp.anime(false);
-            else
-                temp.anime(true);
+            temp.altTexture(false);
+        else
+            temp.altTexture(true);
+    }
+    
+    private boolean checkValidMove(Enemy temp, int d) //1234 up right down left
+    {
+        if(d == 1 && map[temp.getY() + 1][temp.getX()].isTraversable())
+        {return true;}
+        else if(d == 2 && map[temp.getY()][temp.getX() + 1].isTraversable())
+        {return true;}
+        else if(d == 3 && map[temp.getY() - 1][temp.getX()].isTraversable())
+        {return true;}
+        else if(d == 4 && map[temp.getY()][temp.getX() - 1].isTraversable())
+        {return true;}
         return false;
     }
 }

@@ -12,12 +12,15 @@ public class Enemy extends Entity
     private boolean altTexture;  
     private Texture texture;
     private Texture[] textures;
-
+    private int enemyTime;
+    private int tier;
     private boolean aggro;
 
     public Enemy(int x, int y, int tier)
     {
         super(75 * tier, 3);
+
+        this.tier = tier;
 
         this.xCoord = x;
         this.yCoord = y;
@@ -26,32 +29,38 @@ public class Enemy extends Entity
         this.damage = 10 * tier;
 
         this.maxHealth = 75 * tier;
+        this.enemyTime = 0;
 
         this.aggro = false;
 
         this.textures = new  Texture[] {new Texture("assets/Fishy.png"), new Texture("assets/FishyFlap.png"),
-            new Texture("assets/FishyRight.png"), new Texture("assets/FishyFlapRight.png")};
-        this.texture = textures[0];
+            new Texture("assets/FishyRight.png"), new Texture("assets/FishyFlapRight.png"),
+            new Texture("assets/Gobli1.png"), new Texture("assets/Gobli2.png"),
+            new Texture("assets/Gobli1.png"), new Texture("assets/Gobli2.png")};
+        this.texture = textures[0 + (4 * (tier - 1))];
         this.altTexture = false;
     }
 
     public void update()  
     {
-        if(direction == 4)
+        if(this.direction == 4)
         {
             if(altTexture)
-                this.texture = textures[1];
+            {this.texture = textures[1 + (4 * (tier - 1))];}
             else
-                this.texture = textures[0];
+            {this.texture = textures[0 + (4 * (tier - 1))];}
         }
-        else if(direction == 2)
+        else if(this.direction == 2)
         {
             if(altTexture)
-                this.texture = textures[3];
+            {this.texture = textures[3 + (4 * (tier - 1))];}
             else    
-                this.texture = textures[2];
+            {this.texture = textures[2 + (4 * (tier - 1))];}
         }
+        enemyTime++;
     }
+
+    public void setDirection(int d) {this.direction = d;}
 
     public Texture texture() {return texture;}
 
@@ -71,7 +80,11 @@ public class Enemy extends Entity
 
     public double getDamage() {return damage;}
 
-    public void anime(boolean temp) {altTexture = temp;}
+    public void altTexture(boolean temp) {altTexture = temp;}
 
     public boolean getAltTexture() {return altTexture;}
+
+    public int enemyTime() {return enemyTime;}
+
+    public void setEnemyTime(int i) {this.enemyTime = i;}
 }
